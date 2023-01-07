@@ -6,7 +6,7 @@
 #include <stdexcept>
 #include <cstdlib>
 #include <vector>
-#include <string>
+//#include <string>
 #include <cstring>
 
 const uint32_t WIDTH = 800;
@@ -81,21 +81,10 @@ class HelloTriangleApplication
 			    createInfo.enabledLayerCount = 0;
 			  }
 
-			uint32_t glfwExtensionCount = 0;
-			const char **glfwExtensions;
-
-			glfwExtensions = glfwGetRequiredInstanceExtensions(&glfwExtensionCount);
-
-			// To know the extensions requested by glfw
-			std::vector<const char *> glfwSExt(glfwExtensions, glfwExtensions + glfwExtensionCount);
+			auto glfwExtensions = getRequiredExtensions();
 			
-			std::cout << "GLFW requested extension:\n";
-
-			for (const auto& gextention : glfwSExt)
-			  std::cout << '\t' << gextention << '\n';
-			
-			createInfo.enabledExtensionCount = glfwExtensionCount;
-			createInfo.ppEnabledExtensionNames = glfwExtensions;
+			createInfo.enabledExtensionCount = static_cast<uint32_t>(glfwExtensions.size());
+			createInfo.ppEnabledExtensionNames = glfwExtensions.data();
 			createInfo.enabledLayerCount = 0;
 
 			uint32_t extensionCount = 0;
@@ -119,6 +108,27 @@ class HelloTriangleApplication
 			  throw std::runtime_error("failed to create instance!");
 		}
 
+  std::vector<const char*> getRequiredExtensions()
+  {
+    uint32_t glfwExtensionCount = 0;
+    const char **glfwExtensions;
+
+    glfwExtensions = glfwGetRequiredInstanceExtensions(&glfwExtensionCount);
+
+    // To know the extensions requested by glfw
+    std::vector<const char *> glfwSExt(glfwExtensions, glfwExtensions + glfwExtensionCount);
+
+    std::cout << "GLFW requested extension:\n";
+
+    if (enableValidationLayers)
+      glfwSExt.push_back(VK_EXT_DEBUG_UTILS_EXTENSION_NAME);
+    
+    for (const auto& gextention : glfwSExt)
+      std::cout << '\t' << gextention << '\n';
+
+    return glfwSExt;
+  }
+  
   bool checkValidationLayerSupport()
   {
     uint32_t layerCount;
